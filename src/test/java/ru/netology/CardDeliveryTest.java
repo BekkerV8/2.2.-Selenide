@@ -14,7 +14,6 @@ import java.time.format.DateTimeFormatter;
 import static com.codeborne.selenide.Selectors.withText;
 import static com.codeborne.selenide.Selenide.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CardDeliveryTest {
 
@@ -27,7 +26,7 @@ public class CardDeliveryTest {
     @Test
     public void shouldSendForm() {
         Configuration.holdBrowserOpen = true;
-        $("[data-test-id=city] input").setValue("Фрязино");
+        $("[data-test-id=city] input").setValue("Брянск");
         String deliveryDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
         $("[data-test-id=date] input").doubleClick().sendKeys(Keys.DELETE);
         $("[data-test-id=date] input").setValue(deliveryDate);
@@ -37,6 +36,23 @@ public class CardDeliveryTest {
         $(withText("Забронировать")).click();
         $("[data-test-id=notification]").shouldHave(Condition.text
                 ("Успешно! Встреча успешно забронирована на " + deliveryDate), Duration.ofSeconds(15));
+
+    }
+
+    @Test
+    public void shouldNotSendCity() {
+        Configuration.holdBrowserOpen = true;
+
+        String deliveryDate = LocalDate.now().plusDays(3).format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
+        $("[data-test-id=date] input").doubleClick().sendKeys(Keys.DELETE);
+        $("[data-test-id=date] input").setValue(deliveryDate);
+        $("[data-test-id=name] input").setValue("Беккер Валентина");
+        $("[data-test-id=phone] input").setValue("+79679900004");
+        $("[data-test-id=agreement] span").click();
+        $(withText("Забронировать")).click();
+        String expectedText = "Поле обязательно для заполнения";
+        String actualText = $("[data-test-id=city] .input__sub").getText().trim();
+        assertEquals(expectedText, actualText);
 
     }
 
